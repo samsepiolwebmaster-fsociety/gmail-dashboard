@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gmail Dashboard — Sam</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0e;
+    --surface: #141416;
+    --surface2: #1c1c20;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.13);
+    --text: #f0efe8;
+    --text-muted: #888784;
+    --text-dim: #4a4947;
+    --accent: #e8e0c8;
+    --green: #4ade80;
+    --amber: #f59e0b;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .header-left h1 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .header-left h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .header-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Metrics row */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .metric {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+  }
+  .metric-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .metric-value.v-red { color: var(--red); }
+  .metric-value.v-amber { color: var(--amber); }
+  .metric-value.v-blue { color: var(--blue); }
+  .metric-value.v-green { color: var(--green); }
+
+  /* Alert banner */
+  .alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(248, 113, 113, 0.08);
+    border: 0.5px solid rgba(248, 113, 113, 0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .alert-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    color: var(--red);
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+  .alert-text { font-size: 13px; color: var(--red); flex: 1; }
+  .alert-text strong { font-weight: 700; }
+  .alert-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: rgba(248,113,113,0.15);
+    border: 0.5px solid rgba(248,113,113,0.3);
+    color: var(--red);
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .alert-btn:hover { background: rgba(248,113,113,0.25); }
+
+  /* Two-column layout */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Panel */
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .panel-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .panel-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* Email rows */
+  .email-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 1.1rem;
+    border-bottom: 0.5px solid var(--border);
+    transition: background 0.1s;
+  }
+  .email-row:last-child { border-bottom: none; }
+  .email-row:hover { background: var(--surface2); }
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .b-action { background: rgba(248,113,113,0.12); color: var(--red); border: 0.5px solid rgba(248,113,113,0.2); }
+  .b-infra  { background: rgba(245,158,11,0.12); color: var(--amber); border: 0.5px solid rgba(245,158,11,0.2); }
+  .b-notif  { background: rgba(96,165,250,0.12); color: var(--blue); border: 0.5px solid rgba(96,165,250,0.2); }
+  .b-news   { background: rgba(74,222,128,0.12); color: var(--green); border: 0.5px solid rgba(74,222,128,0.2); }
+  .b-gh     { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 0.5px solid var(--border-bright); }
+  .email-subject {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .email-sender {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* Tips grid */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .tip-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.15s;
+  }
+  .tip-card:hover { border-color: var(--border-bright); }
+  .tip-ico {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .tip-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .tip-body {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    flex: 1;
+  }
+  .tip-btn {
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: transparent;
+    border: 0.5px solid var(--border-bright);
+    color: var(--text-muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: left;
+    transition: all 0.1s;
+  }
+  .tip-btn:hover { background: var(--surface2); color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* Labels */
+  .labels-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 1.1rem;
+  }
+  .label-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border: 0.5px solid var(--border-bright);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .label-pill:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1.25rem;
+    border-top: 0.5px solid var(--border);
+    margin-top: 0.5rem;
+  }
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .footer-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+  }
+
+  /* Animations */
+  .metric, .panel, .tip-card, .alert {
+    animation: fadeUp 0.35s ease both;
+  }
+  .metric:nth-child(1) { animation-delay: 0.05s; }
+  .metric:nth-child(2) { animation-delay: 0.1s; }
+  .metric:nth-child(3) { animation-delay: 0.15s; }
+  .metric:nth-child(4) { animation-delay: 0.2s; }
+  .tip-card:nth-child(1) { animation-delay: 0.25s; }
+  .tip-card:nth-child(2) { animation-delay: 0.3s; }
+  .tip-card:nth-child(3) { animation-delay: 0.35s; }
+  .tip-card:nth-child(4) { animation-delay: 0.4s; }
+  .tip-card:nth-child(5) { animation-delay: 0.45s; }
+  .tip-card:nth-child(6) { animation-delay: 0.5s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Inbox overview</h1>
+    <h2>Gmail — samsepiolwebmaster</h2>
+  </div>
+  <div class="header-right">
+    <div class="header-date">
+      <span class="status-dot"></span>Live · 6 mai 2026<br>
+      samsepiolwebmaster@gmail.com
+    </div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Non lus</div>
+    <div class="metric-value v-red">20+</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">GitHub</div>
+    <div class="metric-value v-blue">14</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">À traiter</div>
+    <div class="metric-value v-amber">2</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Newsletters</div>
+    <div class="metric-value v-green">2</div>
+  </div>
+</div>
+
+<div class="alert">
+  <div class="alert-icon">! URGENT</div>
+  <div class="alert-text">
+    <strong>GitHub 2FA requis</strong> — ton compte samsepiolwebmaster-fsociety sera bloqué en écriture si tu n'actives pas le 2FA. Email reçu le 4 mai.
+  </div>
+  <a class="alert-btn" href="https://github.com/settings/two_factor_authentication/setup/intro" target="_blank">Activer →</a>
+</div>
+
+<div class="cols">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Emails non lus — par priorité</span>
+      <span class="panel-count">6 groupes</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-action">Action</span>
+      <span class="email-subject">GitHub 2FA — ACTION REQUIRED</span>
+      <span class="email-sender">github.com</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-infra">Infra</span>
+      <span class="email-subject">Démarrez avec votre nouveau VPS</span>
+      <span class="email-sender">hostinger</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-notif">Notif</span>
+      <span class="email-subject">GitHub Copilot — free plan</span>
+      <span class="email-sender">github.com</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-notif">Notif</span>
+      <span class="email-subject">Thank you for joining Ollama</span>
+      <span class="email-sender">ollama.com</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-news">Newsletter</span>
+      <span class="email-subject">Bubble Product Newsletter May '26</span>
+      <span class="email-sender">bubble.io</span>
+    </div>
+    <div class="email-row">
+      <span class="badge b-gh">GitHub ×14</span>
+      <span class="email-subject">Transferts repos — whimsiboard, goiave…</span>
+      <span class="email-sender">github.com</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Labels suggérés à créer</span>
+      <span class="panel-count">8 labels</span>
+    </div>
+    <div class="labels-row">
+      <span class="label-pill">GitHub/Notifs</span>
+      <span class="label-pill">Holocom</span>
+      <span class="label-pill">HoloMedia</span>
+      <span class="label-pill">Aveleno</span>
+      <span class="label-pill">DAVIS LIVE</span>
+      <span class="label-pill">Infra/Hosting</span>
+      <span class="label-pill">Newsletters</span>
+      <span class="label-pill">À traiter</span>
+    </div>
+    <div style="padding: 0 1.1rem 1rem; border-top: 0.5px solid var(--border);">
+      <p style="font-size: 12px; color: var(--text-muted); line-height: 1.55; margin-top: 0.85rem;">
+        Un label par entité légale = retrouver n'importe quel email en 2 secondes. Combine avec les filtres Gmail pour trier automatiquement dès la réception.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="tips-grid">
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 01</div>
+    <div class="tip-title">Filtres automatiques</div>
+    <div class="tip-body">Les 14 emails GitHub de transfert = zéro valeur. Filtre "from:noreply@github.com → archiver + labeler" = zéro bruit futur.</div>
+    <button class="tip-btn">Créer le filtre →</button>
+  </div>
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 02</div>
+    <div class="tip-title">Règle 1 email = 1 action</div>
+    <div class="tip-body">Archive, réponds, ou délègue immédiatement. Ne jamais laisser un email en "non lu" comme rappel mental — utilise Tasks à la place.</div>
+    <button class="tip-btn">Voir le workflow →</button>
+  </div>
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 03</div>
+    <div class="tip-title">Plages email fixes</div>
+    <div class="tip-body">2 créneaux par jour maxi (ex : 9h et 17h). En dehors, notifications OFF. Le cerveau ne peut pas coder et checker en même temps.</div>
+    <button class="tip-btn">Me donner la méthode →</button>
+  </div>
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 04</div>
+    <div class="tip-title">Labels par projet</div>
+    <div class="tip-body">Holocom, HoloMedia, Aveleno, DAVIS LIVE — un label par entité. Quand un client répond, son email atterrit directement au bon endroit.</div>
+    <button class="tip-btn">Structurer mes labels →</button>
+  </div>
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 05</div>
+    <div class="tip-title">Réponses en canne</div>
+    <div class="tip-body">Crée des réponses types pour les devis Holocom, les relances clients, les propositions HoloMedia. Gmail les propose automatiquement.</div>
+    <button class="tip-btn">Créer mes templates →</button>
+  </div>
+  <div class="tip-card">
+    <div class="tip-ico">Astuce 06</div>
+    <div class="tip-title">Inbox zéro hebdo</div>
+    <div class="tip-body">Chaque vendredi : traiter tout, archiver tout. La semaine suivante commence avec une boîte propre. Mental load divisé par 3.</div>
+    <button class="tip-btn">Voir la routine →</button>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="footer-note">Données issues de Gmail · Mis à jour le 6 mai 2026</span>
+  <span class="footer-tag">GMAIL DASHBOARD · SAM</span>
+</div>
+
+</body>
+</html>

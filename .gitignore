@@ -1,0 +1,37 @@
+# Environment & Credentials
+.env*
+!.env.example
+*.local
+*credentials*
+*secret*
+*token*
+.aws/
+.config/
+
+# Session & Context Files (NEVER commit these)
+contexte-session*.md
+SECURITY.md
+SESSION.md
+context*.md
+!contexte.md
+
+# Build & Dependencies
+node_modules/
+dist/
+build/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.env.local.swp
+
+# Logs
+*.log
+npm-debug.log*
